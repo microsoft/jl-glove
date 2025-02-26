@@ -23,10 +23,10 @@ jobs:
           PACKAGE_VERSION: "${{ steps.runner-context.outputs.package-version }}"
         run: |
           poetry version "$PACKAGE_VERSION"
-          ruff format --check
-          ruff check
-          pyright
-          pytest
+          poetry run ruff format --check
+          poetry run ruff check
+          poetry run pyright
+          poetry run pytest
       - name: upload-coverage
         uses: codecov/codecov-action@v5.3.1
         with:
