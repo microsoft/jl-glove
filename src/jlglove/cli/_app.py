@@ -3,7 +3,6 @@ from rats import apps, cli
 
 
 class Application(apps.Container, cli.Container, apps.PluginMixin):
-
     def execute(self) -> None:
         cli.create_group(click.Group(), self)()
 
