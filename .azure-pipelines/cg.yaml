@@ -2,7 +2,7 @@ trigger: [main]
 pr: [main]
 schedules:
   - cron: "0 0 * * 1"
-    displayName: "Weekly: cookie-doh"
+    displayName: "Weekly: ComponentGovernance"
     branches:
       include:
         - main
