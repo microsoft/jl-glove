@@ -1,5 +1,8 @@
 import click
 from rats import apps, cli
+import pytorch_lightning as pl
+
+from jlglove import rep
 
 
 class Application(apps.Container, cli.Container, apps.PluginMixin):
@@ -10,7 +13,11 @@ class Application(apps.Container, cli.Container, apps.PluginMixin):
     @click.option("--output-path", help="path to store generated training data")
     def _generate(self, output_path: str) -> None:
         """Create a directory of generated synthetic data."""
+        pl.seed_everything(1)  # Set seed for reproducibility
         print(f"generating synthetic data into: {output_path}")
+
+        sdg = rep.SyntheticDataGenerator()
+        sdg.generate()
 
     @cli.command()
     @click.option("--input-path", help="path to raw tcr data")
