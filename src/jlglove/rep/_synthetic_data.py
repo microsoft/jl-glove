@@ -14,13 +14,11 @@ from ._compute_jl import (
 )
 
 
-
-
 class SyntheticDataGenerator:
-    def __init__(self, N: int = 5000, J: int = 500, K: int = 3, save_path: str = "~/data/glove/"):
-        self.N = N
-        self.J = J
-        self.K = K
+    def __init__(self, n: int, j: int, k: int, save_path: Path):
+        self.n = n
+        self.j = j
+        self.k = k
         self.save_path = save_path
         # N = 5000 # num samples # J = 500 # num TCRs # K = 3# num of latent factors
 
@@ -34,7 +32,7 @@ class SyntheticDataGenerator:
         # B: captures TCR structure
         # S: captures TCR population structure among individuls.
         """
-        Path(self.save_path).expanduser().mkdir(parents=True, exist_ok=True)
+        self.save_path.mkdir(parents=True, exist_ok=True)
 
         B = self.generate_tcr_structure()
         S = self.generate_tcr_pop_structure()
@@ -48,20 +46,20 @@ class SyntheticDataGenerator:
 
         non_zero_list = [(int(x), int(y)) for x, y in zip(*np.nonzero(ToyData_bin), strict=False)]
         rep_df = pd.DataFrame(non_zero_list, columns=["name", "bioIdentity"])
-        training_data_url = f"{self.save_path}Glove_Synthentic_Data_500_rep.parquet"
+        training_data_url = f"{self.save_path}/Glove_Synthentic_Data_500_rep.parquet"
         print("Saving training_data to: ", training_data_url)
         rep_df.to_parquet(training_data_url, index=False)
 
         toy_t2, bi_df, seqs_t2 = self.compute_co_occurence(rep_df)
         basename = "Glove_Synthentic_Data_500"
-        t2_url = f"{self.save_path}{basename}_t2.parquet"
+        t2_url = f"{self.save_path}/{basename}_t2.parquet"
         print("Saving training_data to: ", t2_url)
         # seqs_t2 = seqs_t2.reset_index(drop=True)
         # dd.from_pandas(seqs_t2, npartitions=10).to_parquet(t2_url) # For testing training with proportion_prop
         seqs_t2.to_parquet(t2_url, index=False)
 
         bi_df_with_binary_columns = self.calculate_cluster_labels(B, toy_t2, bi_df)
-        bi_df_url = f"{self.save_path}{basename}_BioId_with_ES.parquet"
+        bi_df_url = f"{self.save_path}/{basename}_BioId_with_ES.parquet"
         print("Saving training_bioids to: ", bi_df_url)
         bi_df_with_binary_columns.to_parquet(bi_df_url, index=False)
 
@@ -84,7 +82,7 @@ class SyntheticDataGenerator:
             final_embeddings_pd, bi_df_with_binary_columns, how="inner", on="monotonic_index"
         )
         print("jl_bioid shape: ", jl_bioid.shape)
-        jl_bioid_url = f"{self.save_path}{basename}_BioId_with_ES_JL.parquet"
+        jl_bioid_url = f"{self.save_path}/{basename}_BioId_with_ES_JL.parquet"
         print("Saving JL training_bioids to: ", jl_bioid_url)
         jl_bioid.to_parquet(jl_bioid_url, index=False)
 
@@ -130,7 +128,7 @@ class SyntheticDataGenerator:
             toy_t2, figsize=(5, 4), yticklabels=False, xticklabels=False, col_cluster=True
         )
         row_clusters = g.dendrogram_row.linkage
-        clusters = fcluster(row_clusters, self.K, criterion="maxclust")
+        clusters = fcluster(row_clusters, self.k, criterion="maxclust")
         print("clusters: ", np.unique(clusters))
         ARI = adjusted_rand_score(B.argmax(axis=1), clusters)
         print("ARI: ", ARI)
@@ -157,11 +155,11 @@ class SyntheticDataGenerator:
         return ToyData_bin
 
     def generate_tcr_pop_structure(self):
-        S = np.zeros((self.K, self.N))
+        S = np.zeros((self.k, self.n))
         ## Create S in K * N
-        S_expos = int(self.N / 2)
+        S_expos = int(self.n / 2)
         for i in range(S_expos):
-            alpha = [1] * self.K  ## change this to create sparsity
+            alpha = [1] * self.k  ## change this to create sparsity
             q_K = np.random.dirichlet(alpha, size=1)[0]
             # print(q_K)
             S[0][i] = q_K[0]
@@ -170,11 +168,11 @@ class SyntheticDataGenerator:
         return S
 
     def generate_tcr_structure(self):
-        B = np.empty((self.J, self.K))
+        B = np.empty((self.j, self.k))
         ## Create T in J * K
 
-        for j in range(self.J):
-            alpha = [0.01] * self.K
+        for j in range(self.j):
+            alpha = [0.01] * self.k
             # alpha = 0.01, 0.1, 0.5, 1 varies level of sparsity, smaller => sparse
             q_K = np.random.dirichlet(alpha, size=1)[0]
             B[j][0] = q_K[0]
@@ -214,8 +212,3 @@ class SyntheticDataGenerator:
         bi_df = bi_df.rename(columns={"index": "monotonic_index"})
 
         return data, bi_df, seqs_join
-
-
-if __name__ == "__main__":
-    sdg = SyntheticDataGenerator()
-    sdg.generate()
