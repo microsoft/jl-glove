@@ -2,14 +2,14 @@ from datetime import timedelta
 from pathlib import Path
 
 import click
+import dask.dataframe as dd
+import pytorch_lightning as pl
 import torch
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.loggers import CSVLogger
 from pytorch_lightning.strategies import DDPStrategy
 from rats import apps, cli, logs
-import pytorch_lightning as pl
-import dask.dataframe as dd
-from pytorch_lightning.loggers import CSVLogger, WandbLogger
 
 from jlglove import rep
 
@@ -49,10 +49,7 @@ class Application(apps.Container, cli.Container, apps.PluginMixin):
         print(f"storing prepared data into: {output_path}")
 
     @cli.command()
-    @click.option(
-        "--input-path",
-        default=".tmp/generated",
-        help="path to training data directory")
+    @click.option("--input-path", default=".tmp/generated", help="path to training data directory")
     @click.option(
         "--output-path",
         default=".tmp/results",
@@ -63,7 +60,9 @@ class Application(apps.Container, cli.Container, apps.PluginMixin):
         print(f"training model from: {input_path}")
         print(f"storing embeddings into: {output_path}")
         training_data_uri = Path(input_path) / "Glove_Synthentic_Data_500_t2.parquet"
-        training_bioids_uri = Path(input_path) / "Glove_Synthentic_Data_500_BioId_with_ES_JL.parquet"
+        training_bioids_uri = (
+            Path(input_path) / "Glove_Synthentic_Data_500_BioId_with_ES_JL.parquet"
+        )
 
         num_tcr = 500
         emb_size = 100
@@ -106,11 +105,12 @@ class Application(apps.Container, cli.Container, apps.PluginMixin):
         ]
 
         custom_timeout = timedelta(minutes=120)
-        ddp_strategy = DDPStrategy(
+        DDPStrategy(
             find_unused_parameters=False,
             timeout=custom_timeout,
             process_group_backend="nccl",
-            checkpoint_io=rep.CustomTorchCheckpointIO(), )  # TODO NCCL fails when gpus > 2; gloo
+            checkpoint_io=rep.CustomTorchCheckpointIO(),
+        )  # TODO NCCL fails when gpus > 2; gloo
 
         devices = torch.cuda.device_count()
         for i in range(devices):

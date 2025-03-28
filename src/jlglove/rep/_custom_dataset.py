@@ -1,3 +1,4 @@
+import logging
 import os
 import random
 import shutil
@@ -5,10 +6,9 @@ import shutil
 import dask.dataframe as dd
 import pytorch_lightning as pl
 import torch
+
 # import wandb
 from torch.utils.data import DataLoader, Dataset
-
-import logging
 
 logger = logging.getLogger(__name__)
 

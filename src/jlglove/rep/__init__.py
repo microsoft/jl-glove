@@ -1,4 +1,5 @@
 """Handful of repertoire-related libraries."""
+
 from ._custom_callbacks import (
     CustomTorchCheckpointIO,
     EmbeddingPlotterCallback,
@@ -9,10 +10,10 @@ from ._glove_lightning_model import GloVeLightningModel
 from ._synthetic_data import SyntheticDataGenerator
 
 __all__ = [
-    "SyntheticDataGenerator",
+    "CustomDataModule",
+    "CustomTorchCheckpointIO",
     "EmbeddingPlotterCallback",
     "EpochDurationPrinter",
-    "CustomTorchCheckpointIO",
-    "CustomDataModule",
     "GloVeLightningModel",
+    "SyntheticDataGenerator",
 ]

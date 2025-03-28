@@ -103,7 +103,9 @@ class SyntheticDataGenerator:
         n_bioIds = seqs_uniques_filtered["bioIdentity"].nunique()
 
         # Assert that the number of unique bioIdentities is the same as in bio_df
-        assert n_bioIds == bio_df["bioIdentity"].nunique(), "Mismatch in unique bioIdentities count"
+        assert n_bioIds == bio_df["bioIdentity"].nunique(), (
+            "Mismatch in unique bioIdentities count"
+        )
 
         # Number of non-zero entries
         n_nonzero_entries = len(seqs_uniques_filtered)
@@ -199,7 +201,9 @@ class SyntheticDataGenerator:
         seqs_join = seqs_join[seqs_join["row_index"] != seqs_join["column_index"]]
 
         # Group by row_index and column_index and count occurrences
-        seqs_join = seqs_join.groupby(["row_index", "column_index"]).size().reset_index(name="vals")
+        seqs_join = (
+            seqs_join.groupby(["row_index", "column_index"]).size().reset_index(name="vals")
+        )
         # Create a COO matrix from the counts
         t2 = coo_matrix(
             (seqs_join["vals"], (seqs_join["row_index"], seqs_join["column_index"])),

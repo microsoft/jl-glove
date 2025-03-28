@@ -1,3 +1,4 @@
+import logging
 import os
 import time
 from pathlib import Path
@@ -10,8 +11,6 @@ from pytorch_lightning.callbacks import Callback
 from pytorch_lightning.plugins.io import TorchCheckpointIO
 from pytorch_lightning.utilities import rank_zero_only
 from sklearn.manifold import TSNE
-
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -190,14 +189,14 @@ class EmbeddingPlotterCallback(Callback):
     @rank_zero_only
     def log_gradients(self, pl_module):
         print("Logging wandb gradients...")
-        for name, param in pl_module.named_parameters():
+        for _name, param in pl_module.named_parameters():
             if param.requires_grad and param.grad is not None:
                 # Log the gradient norm
-                grad_norm = param.grad.data.norm(2)
+                param.grad.data.norm(2)
                 # wandb.log({f"gradients_norms/{name}": grad_norm.item()})
 
                 # Convert gradients to NumPy array and log as histogram
-                grad_np = param.grad.data.cpu().numpy()
+                param.grad.data.cpu().numpy()
                 # wandb.log({f"gradients/{name}": wandb.Histogram(grad_np)})
 
     @rank_zero_only
