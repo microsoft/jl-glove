@@ -56,7 +56,8 @@ class Application(apps.Container, cli.Container, apps.PluginMixin):
         default=".tmp/results",
         help="path to store generated training data",
     )
-    def _train(self, input_path: str, output_path: str) -> None:
+    @click.option("--checkpoint-name", help="full checkpoint name from wandb to resume from")
+    def _train(self, input_path: str, output_path: str, checkpoint_name: str) -> None:
         """Train model embeddings from a prepared directory of tcr data."""
         print(f"training model from: {input_path}")
         print(f"storing embeddings into: {output_path}")
@@ -72,7 +73,7 @@ class Application(apps.Container, cli.Container, apps.PluginMixin):
         eval_epoch = 10
         num_epochs = 50
         # TODO: not sure how to test this yet
-        ckpt_path = None  # "model:v3"
+        ckpt_path = ".tmp/results/artifacts/model.ckpt" if checkpoint_name is not None else None
         train_partition_prop = 1.0
         batch_size = 1
         number_of_workers = 0
@@ -123,6 +124,9 @@ class Application(apps.Container, cli.Container, apps.PluginMixin):
         if wandb_detected:
             torch_logger = WandbLogger(project="jl-glove", log_model="all")
         else:
+            if checkpoint_name is not None:
+                raise RuntimeError("checkpoint_name is not supported without wandb")
+
             # we fall back to a simple csv logger otherwise
             torch_logger = CSVLogger(save_dir=".tmp/torch-logs")
 
@@ -154,7 +158,7 @@ class Application(apps.Container, cli.Container, apps.PluginMixin):
             training_data=training_data,
             batch_size=batch_size,
             num_workers=number_of_workers,
-            cktp_path=ckpt_path,
+            cktp_path=checkpoint_name,
             train_partition_prop=train_partition_prop,
             checkpoint_dir=output_path,
         )

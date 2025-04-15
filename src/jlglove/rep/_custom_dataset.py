@@ -56,7 +56,7 @@ class CustomDataModule(pl.LightningDataModule):
             self.local_ckpt_path = os.path.join(artifact_dir, files[-1])
             print("Final checkpoint path: ", self.local_ckpt_path)
             # Load the checkpoint file
-            checkpoint = torch.load(self.local_ckpt_path)
+            checkpoint = torch.load(self.local_ckpt_path, weights_only=False)
             print("Checkpoint Keys", checkpoint.keys())
 
     def clear_directory(self, directory):

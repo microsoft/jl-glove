@@ -16,19 +16,12 @@ This is a research model which should not be used in any real clinical or produc
 ## Risks and limitations
 JL-GloVe TCR embeddings reflect the co-occurrence statistics of the data used for training.
 
-## Contributing
-
-This project welcomes contributions and suggestions.  Most contributions require you to agree to a
-Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
-the rights to use your contribution. For details, visit https://cla.opensource.microsoft.com.
-
-When you submit a pull request, a CLA bot will automatically determine whether you need to provide
-a CLA and decorate the PR appropriately (e.g., status check, comment). Simply follow the instructions
-provided by the bot. You will only need to do this once across all repos using our CLA.
-
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
-For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
-contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+## License and Usage Notices
+The data, code, and model checkpoints described in this repository is provided for research use
+only. The data, code, and model checkpoints is not intended for use in clinical decision-making
+or for any other clinical use, and the performance of model for clinical use has not been
+established. You bear sole responsibility for any use of these data, code, and model checkpoints,
+including incorporation into any product intended for clinical use.
 
 ## Trademarks
 
