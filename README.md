@@ -1,14 +1,19 @@
 # Project
+Developed by: Paidamoyo Chapfuwa , Ilker Demirel , Lorenzo Pisani, Javier Zazo, Elon Portugaly, H. Jabran Zahid, Julia Greissl
+Model type: Un-supervised representation learning
+License: MIT
 
-> This repo has been populated by an initial template to help get you started. Please
-> make sure to update the content to build a great experience for community-building.
+## Direct intended uses
+JL-Glove is shared for research purposes only, namely, benchmarking and inference on downstream
+tasks. It is not meant to be used for clinical practice. JL-Glove was not extensively tested for
+its capabilities and properties, including its accuracy and reliability in application settings,
+fairness across different demographics and uses, and security and privacy.
 
-As the maintainer of this project, please make a few updates:
+## Out-of-scope uses
+This is a research model which should not be used in any real clinical or production scenario.
 
-- Improving this README.MD file to provide a great experience
-- Updating SUPPORT.MD with content about this project's support experience
-- Understanding the security reporting process in SECURITY.MD
-- Remove this section from the README
+## Risks and limitations
+JL-GloVe TCR embeddings reflect the co-occurrence statistics of the data used for training.
 
 ## Contributing
 
