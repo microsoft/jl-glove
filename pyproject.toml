@@ -19,6 +19,7 @@ dependencies = [
     "scipy (>=1.15.2)",
     "seaborn (>=0.12.2)",
     "dask[dataframe, distributed] (>=2023.6.0)",
+    "umap-learn",
 ]
 
 [tool.poetry]

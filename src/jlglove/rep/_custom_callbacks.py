@@ -1,11 +1,13 @@
 import logging
 import os
 import time
+import uuid
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
+import umap
 from lightning_utilities.core.rank_zero import rank_zero_info
 from pytorch_lightning.callbacks import Callback
 from pytorch_lightning.plugins.io import TorchCheckpointIO
@@ -31,7 +33,7 @@ class CustomTorchCheckpointIO(TorchCheckpointIO):
     def save_checkpoint(self, checkpoint, path, storage_options=None):
         # Create the directory if it doesn't exist
         try:
-            print(f"Creating directory for {path}")
+            logger.warning(f"Creating directory for {path}")
             os.makedirs(os.path.dirname(path), exist_ok=True)
         except PermissionError:
             # Handle the permission error by appending a tilde to the path
@@ -183,7 +185,6 @@ class EmbeddingPlotterCallback(Callback):
     def log_to_wandb(self, pl_module, plot_name, plot):
         print(f"saving {plot_name} to wandb...")
         logger.warning("SKIPPING WANDB THINGS HERE")
-        plot.show()
         # wandb.log({plot_name: wandb.Image(plot)})
 
     @rank_zero_only
@@ -250,17 +251,20 @@ class EmbeddingPlotterCallback(Callback):
             )
             # Use the helper methods to log and save only on rank 0
             self.log_to_wandb(plot_name="t-SNE", plot=tsne_plot, pl_module=pl_module)
+            Path(".tmp/plots").mkdir(exist_ok=True)
+            plt.savefig(f".tmp/plots/tsne-{sub_title}.png")
             plt.clf()
 
-            # print(f"Computing UMAP for {trainer.current_epoch}")
-            # umap_results = umap.UMAP(random_state=42).fit_transform(final_embeddings)
-            # umap_plot = pl_module.plot_embeddings(
-            #     embeddings=umap_results,
-            #     title="UMAP " + sub_title,
-            #     bioid_df=self.bioid_df,
-            #     plot_labels=plot_labels
-            # )
-            # self.log_to_wandb(plot_name ="UMAP",plot= umap_plot, pl_module=pl_module)
-            # plt.clf()
+            print(f"Computing UMAP for {trainer.current_epoch}")
+            umap_results = umap.UMAP(random_state=42).fit_transform(final_embeddings)
+            umap_plot = pl_module.plot_embeddings(
+                embeddings=umap_results,
+                title="UMAP " + sub_title,
+                bioid_df=self.bioid_df,
+                plot_labels=plot_labels
+            )
+            self.log_to_wandb(plot_name ="UMAP",plot= umap_plot, pl_module=pl_module)
+            plt.savefig(f".tmp/plots/umap-{sub_title}.png")
+            plt.clf()
 
             # self.save_model_checkpoint(trainer=trainer, pl_module=pl_module, epoch_loss=epoch_loss)
