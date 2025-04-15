@@ -1,7 +1,8 @@
 # Project
-Developed by: Paidamoyo Chapfuwa , Ilker Demirel , Lorenzo Pisani, Javier Zazo, Elon Portugaly, H. Jabran Zahid, Julia Greissl
-Model type: Un-supervised representation learning
-License: MIT
+- Developed by: Paidamoyo Chapfuwa , Ilker Demirel , Lorenzo Pisani, Javier Zazo, Elon Portugaly, 
+H. Jabran Zahid, Julia Greissl
+- Model type: Un-supervised representation learning
+- License: MIT
 
 ## Direct intended uses
 JL-Glove is shared for research purposes only, namely, benchmarking and inference on downstream
