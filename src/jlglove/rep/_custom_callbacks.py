@@ -1,13 +1,13 @@
 import logging
 import os
 import time
-import uuid
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import umap
+import wandb
 from lightning_utilities.core.rank_zero import rank_zero_info
 from pytorch_lightning.callbacks import Callback
 from pytorch_lightning.plugins.io import TorchCheckpointIO
@@ -30,6 +30,11 @@ def move_to_cpu(obj):
 
 
 class CustomTorchCheckpointIO(TorchCheckpointIO):
+    _wandb_detected: bool
+
+    def __init__(self) -> None:
+        self._wandb_detected = os.environ.get("WANDB_API_KEY") is not None
+
     def save_checkpoint(self, checkpoint, path, storage_options=None):
         # Create the directory if it doesn't exist
         try:
@@ -63,12 +68,12 @@ class CustomTorchCheckpointIO(TorchCheckpointIO):
             torch.save(checkpoint, f, pickle_protocol=4)  # Explicitly set pickle protocol to 4
         rank_zero_info(f"Checkpoint saved locally to {checkpoint_path}")
 
-        logger.warning("SKIPPING WANDB THINGS HERE")
         # Log the checkpoint to W&B using artifacts
-        # artifact = wandb.Artifact("model", type="model")
-        # artifact.add_file(checkpoint_path)
-        # wandb.run.log_artifact(artifact)
-        rank_zero_info(f"Checkpoint logged to W&B as an artifact: {checkpoint_path}")
+        if self._wandb_detected:
+            artifact = wandb.Artifact("model", type="model")
+            artifact.add_file(str(checkpoint_path))
+            wandb.run.log_artifact(artifact)
+            rank_zero_info(f"Checkpoint logged to W&B as an artifact: {checkpoint_path}")
 
         parent_directory = os.path.dirname(checkpoint_path)
         files_and_dirs = os.listdir(parent_directory)
@@ -78,20 +83,26 @@ class CustomTorchCheckpointIO(TorchCheckpointIO):
 
 
 class EpochDurationPrinter(Callback):
+
+    _wandb_detected: bool
+
     def __init__(self, bioid_df):
         self.bioid_df = bioid_df
+        self._wandb_detected = os.environ.get("WANDB_API_KEY") is not None
 
     def on_train_start(self, trainer, pl_module):
         global_rank = trainer.global_rank
         if global_rank == 0:
             rank_zero_info("Training is starting...")
-            logger.warning("SKIPPING WANDB THINGS HERE")
-            # bioid_csv_file = "bioid_df.csv"
-            # self.bioid_df.to_csv(bioid_csv_file, index=False)
-            # rank_zero_info("Adding bioid_df to wandb...")
-            # artifact = wandb.Artifact("dataset", type="dataset")
-            # artifact.add_file(bioid_csv_file)
-            # wandb.log_artifact(artifact)
+            bioid_csv_file = ".tmp/bioids/bioid_df.csv"
+            Path(".tmp/bioids/").mkdir(exist_ok=True)
+            self.bioid_df.to_csv(bioid_csv_file, index=False)
+
+            if self._wandb_detected:
+                rank_zero_info("Adding bioid_df to wandb...")
+                artifact = wandb.Artifact("dataset", type="dataset")
+                artifact.add_file(bioid_csv_file)
+                wandb.log_artifact(artifact)
 
         self.calculate_initial_loss(
             pl_module,
@@ -133,8 +144,8 @@ class EpochDurationPrinter(Callback):
         # Log the initial loss
         if global_rank == 0:
             rank_zero_info(f"{data} loss before training: {initial_loss}")
-            logger.warning("SKIPPING WANDB THINGS HERE")
-            # wandb.log({f"initial_{data}_loss": initial_loss})
+            if self._wandb_detected:
+                wandb.log({f"initial_{data}_loss": initial_loss})
 
         # Make sure the model is back in train mode
         pl_module.train()
@@ -177,49 +188,51 @@ class EpochDurationPrinter(Callback):
 
 
 class EmbeddingPlotterCallback(Callback):
+    _wandb_detected: bool
     def __init__(self, bioid_df, eval_epochs):
         self.bioid_df = bioid_df
         self.eval_epochs = eval_epochs
+        self._wandb_detected = os.environ.get("WANDB_API_KEY") is not None
 
     @rank_zero_only
     def log_to_wandb(self, pl_module, plot_name, plot):
-        print(f"saving {plot_name} to wandb...")
-        logger.warning("SKIPPING WANDB THINGS HERE")
-        # wandb.log({plot_name: wandb.Image(plot)})
+        if self._wandb_detected:
+            print(f"saving {plot_name} to wandb...")
+            wandb.log({plot_name: wandb.Image(plot)})
 
     @rank_zero_only
     def log_gradients(self, pl_module):
         print("Logging wandb gradients...")
-        for _name, param in pl_module.named_parameters():
+        for name, param in pl_module.named_parameters():
             if param.requires_grad and param.grad is not None:
-                # Log the gradient norm
-                param.grad.data.norm(2)
-                # wandb.log({f"gradients_norms/{name}": grad_norm.item()})
+                if self._wandb_detected:
+                    # Log the gradient norm
+                    grad_norm = param.grad.data.norm(2)
+                    wandb.log({f"gradients_norms/{name}": grad_norm.item()})
 
-                # Convert gradients to NumPy array and log as histogram
-                param.grad.data.cpu().numpy()
-                # wandb.log({f"gradients/{name}": wandb.Histogram(grad_np)})
+                    # Convert gradients to NumPy array and log as histogram
+                    grad_np = param.grad.data.cpu().numpy()
+                    wandb.log({f"gradients/{name}": wandb.Histogram(grad_np)})
 
     @rank_zero_only
     def save_model_checkpoint(self, trainer, pl_module, epoch_loss):
-        print(f"Saving model for {trainer.current_epoch}")
-        logger.warning("SKIPPING WANDB THINGS HERE")
-        # TODO: make this log to local files
+        logger.info(f"Saving model for {trainer.current_epoch}")
         # these are the checkpoints to resume in case of errors
-
-        # save_path = f"model_weights_{wandb.run.id}_epoch_{trainer.current_epoch}.pth"
-        # torch.save(
-        #     {
-        #         "epoch": trainer.current_epoch,
-        #         "model_state_dict": pl_module.state_dict(),
-        #         "optimizer_state_dict": pl_module.trainer.optimizers[0].state_dict(),
-        #         "loss": epoch_loss,
-        #     },
-        #     save_path,
-        # )
-        # artifact = wandb.Artifact("model", type="model")
-        # artifact.add_file(save_path)
-        # wandb.run.log_artifact(artifact)
+        Path(".tmp/checkpoints").mkdir(exist_ok=True)
+        save_path = f".tmp/checkpoints/model_weights_epoch_{trainer.current_epoch}.pth"
+        torch.save(
+            {
+                "epoch": trainer.current_epoch,
+                "model_state_dict": pl_module.state_dict(),
+                "optimizer_state_dict": pl_module.trainer.optimizers[0].state_dict(),
+                "loss": epoch_loss,
+            },
+            save_path,
+        )
+        if self._wandb_detected:
+            artifact = wandb.Artifact("model", type="model")
+            artifact.add_file(save_path)
+            wandb.run.log_artifact(artifact)
 
     @rank_zero_only
     def on_train_epoch_end(self, trainer, pl_module):
@@ -267,4 +280,4 @@ class EmbeddingPlotterCallback(Callback):
             plt.savefig(f".tmp/plots/umap-{sub_title}.png")
             plt.clf()
 
-            # self.save_model_checkpoint(trainer=trainer, pl_module=pl_module, epoch_loss=epoch_loss)
+            self.save_model_checkpoint(trainer=trainer, pl_module=pl_module, epoch_loss=epoch_loss)

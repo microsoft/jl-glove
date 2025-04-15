@@ -1,3 +1,4 @@
+import os
 from datetime import timedelta
 from pathlib import Path
 
@@ -7,7 +8,7 @@ import pytorch_lightning as pl
 import torch
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import ModelCheckpoint
-from pytorch_lightning.loggers import CSVLogger
+from pytorch_lightning.loggers import CSVLogger, WandbLogger
 from pytorch_lightning.strategies import DDPStrategy
 from rats import apps, cli, logs
 
@@ -64,11 +65,14 @@ class Application(apps.Container, cli.Container, apps.PluginMixin):
             Path(input_path) / "Glove_Synthentic_Data_500_BioId_with_ES_JL.parquet"
         )
 
+        wandb_detected = os.environ.get("WANDB_API_KEY") is not None
+
         num_tcr = 500
         emb_size = 100
         eval_epoch = 10
         num_epochs = 50
-        ckpt_path = None
+        # TODO: not sure how to test this yet
+        ckpt_path = None  # "model:v3"
         train_partition_prop = 1.0
         batch_size = 1
         number_of_workers = 0
@@ -116,9 +120,12 @@ class Application(apps.Container, cli.Container, apps.PluginMixin):
         for i in range(devices):
             print(f"device {i}:", torch.tensor(1, device=f"cuda:{i}").shape)
 
-        # TODO: need to switch loggers
-        # wandb_logger = WandbLogger(project="jl-glove", log_model="all")
-        torch_logger = CSVLogger(save_dir=".tmp/torch-logs")
+        if wandb_detected:
+            torch_logger = WandbLogger(project="jl-glove", log_model="all")
+        else:
+            # we fall back to a simple csv logger otherwise
+            torch_logger = CSVLogger(save_dir=".tmp/torch-logs")
+
         if torch.cuda.is_available() and devices > 0:
             trainer = Trainer(
                 max_epochs=num_epochs,

@@ -2,10 +2,12 @@ import logging
 import os
 import random
 import shutil
+from pathlib import Path
 
 import dask.dataframe as dd
 import pytorch_lightning as pl
 import torch
+import wandb
 
 # import wandb
 from torch.utils.data import DataLoader, Dataset
@@ -14,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 class CustomDataModule(pl.LightningDataModule):
+    _wandb_detected: bool
     def __init__(
         self,
         training_data: dd.DataFrame,
@@ -33,21 +36,24 @@ class CustomDataModule(pl.LightningDataModule):
         self.checkpoint_dir = checkpoint_dir + "/artifacts"
         self._val_dataloader = None  # Caching validation dataloader
         self._test_dataloader = None  # Caching test dataloader
+        self._wandb_detected = os.environ.get("WANDB_API_KEY") is not None
 
     def prepare_data(self):
         if self.ckpt_path is not None and self.trainer.is_global_zero:
             # Initialize WandB
-            logger.warning("SKIPPING WANDB THINGS HERE")
-            # wandb.init(project="glove_lightning")
+            if not self._wandb_detected:
+                raise RuntimeError("can't load checkpoint from wandb without WANDB_API_KEY")
+
+            wandb.init(project="jl-glove")
             print("Downloading checkpoint from wandb...")
-            # artifact = wandb.use_artifact(self.ckpt_path, type="model")
-            # artifact_dir = artifact.download(root=self.checkpoint_dir)
-            # print("Saved Checkpoint files at: ", artifact_dir)
-            # files = os.listdir(artifact_dir)
+            artifact = wandb.use_artifact(self.ckpt_path, type="model")
+            artifact_dir = artifact.download(root=self.checkpoint_dir)
+            print("Saved Checkpoint files at: ", artifact_dir)
+            files = os.listdir(artifact_dir)
             print("Files in the checkpoint directory:")
-            # for file in files:
-            #     print(file)
-            # self.local_ckpt_path = os.path.join(artifact_dir, files[-1])
+            for file in files:
+                print(file)
+            self.local_ckpt_path = os.path.join(artifact_dir, files[-1])
             print("Final checkpoint path: ", self.local_ckpt_path)
             # Load the checkpoint file
             checkpoint = torch.load(self.local_ckpt_path)

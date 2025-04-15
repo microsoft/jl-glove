@@ -7,3 +7,6 @@ site/
 .idea/*
 
 poetry.toml
+
+wandb/*
+.env
