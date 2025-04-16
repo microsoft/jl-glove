@@ -130,6 +130,8 @@ ignore = [
     "D212", # D212: Multi-line docstring summary should start at the second line
     # This rule seems buggy: https://github.com/astral-sh/ruff/issues/2480
     "PD011", # PD011: Use `.to_numpy()` instead of `.values`
+    "PD015", # PD015: Use `.merge` method instead of `pd.merge` function.
+    "PD901", # PD901: Avoid using the generic variable name `df` for DataFrames.
 ]
 
 # Allow fix for all enabled rules (when `--fix`) is provided.

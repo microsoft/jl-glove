@@ -7,16 +7,18 @@ from pathlib import Path
 import dask.dataframe as dd
 import pytorch_lightning as pl
 import torch
-import wandb
 
 # import wandb
 from torch.utils.data import DataLoader, Dataset
+
+import wandb
 
 logger = logging.getLogger(__name__)
 
 
 class CustomDataModule(pl.LightningDataModule):
     _wandb_detected: bool
+
     def __init__(
         self,
         training_data: dd.DataFrame,
@@ -39,7 +41,7 @@ class CustomDataModule(pl.LightningDataModule):
         self._wandb_detected = os.environ.get("WANDB_API_KEY") is not None
 
     def prepare_data(self):
-        if self.ckpt_path is not None and self.trainer.is_global_zero:
+        if self.ckpt_path is not None and self.trainer.is_global_zero:  # type: ignore
             # Initialize WandB
             if not self._wandb_detected:
                 raise RuntimeError("can't load checkpoint from wandb without WANDB_API_KEY")
@@ -49,27 +51,27 @@ class CustomDataModule(pl.LightningDataModule):
             artifact = wandb.use_artifact(self.ckpt_path, type="model")
             artifact_dir = artifact.download(root=self.checkpoint_dir)
             print("Saved Checkpoint files at: ", artifact_dir)
-            files = os.listdir(artifact_dir)
+            files = os.listdir(artifact_dir)  # noqa: PTH208
             print("Files in the checkpoint directory:")
             for file in files:
                 print(file)
-            self.local_ckpt_path = os.path.join(artifact_dir, files[-1])
+            self.local_ckpt_path = os.path.join(artifact_dir, files[-1])  # noqa: PTH118
             print("Final checkpoint path: ", self.local_ckpt_path)
             # Load the checkpoint file
             checkpoint = torch.load(self.local_ckpt_path, weights_only=False)
             print("Checkpoint Keys", checkpoint.keys())
 
-    def clear_directory(self, directory):
-        if os.path.exists(directory):
+    def clear_directory(self, directory):  # type: ignore
+        if Path(directory).exists():
             shutil.rmtree(directory)
 
-    def setup(self, stage=None):
+    def setup(self, stage=None):  # type: ignore
         #  This is called on every GPU
         # Split the dataset into train, validation, and test here if needed
         if stage == "fit" or stage is None:
             self.local_training_data = self.training_data
 
-    def train_dataloader(self):
+    def train_dataloader(self):  # type: ignore
         dataset = CoOccurrenceDataset(
             self.local_training_data, partition_prop=self.train_partition_prop
         )
@@ -78,13 +80,13 @@ class CustomDataModule(pl.LightningDataModule):
             batch_size=self.batch_size,
             num_workers=self.num_workers,  # should be 0 if using Dask
             shuffle=True,
-            collate_fn=CoOccurrenceDataset.custom_collate_fn,
+            collate_fn=CoOccurrenceDataset.custom_collate_fn,  # type: ignore
             # persistent_workers=True if self.num_workers > 0 else False,
             # pin_memory=True #Did not see improvement in performance
         )
         return dataloader
 
-    def val_dataloader(self):
+    def val_dataloader(self):  # type: ignore
         if self._val_dataloader is None:
             val_partition_prop = self.train_partition_prop
             print(f"Creating validation dataloader with partion prop {val_partition_prop}")
@@ -96,7 +98,7 @@ class CustomDataModule(pl.LightningDataModule):
                 batch_size=self.batch_size,
                 num_workers=self.num_workers,  # should be 0 if using Dask
                 shuffle=False,
-                collate_fn=CoOccurrenceDataset.custom_collate_fn,
+                collate_fn=CoOccurrenceDataset.custom_collate_fn,  # type: ignore
                 # persistent_workers=True if self._number_of_workers > 0 else False,
                 # pin_memory=True Did not see improvement in performance
             )
@@ -104,7 +106,7 @@ class CustomDataModule(pl.LightningDataModule):
         else:
             return self._val_dataloader
 
-    def test_dataloader(self):
+    def test_dataloader(self):  # type: ignore
         if self._test_dataloader is None:
             test_partition_prop = 1.0
             print(f"Creating test dataloader with partion prop {test_partition_prop}")
@@ -116,7 +118,7 @@ class CustomDataModule(pl.LightningDataModule):
                 batch_size=self.batch_size,
                 num_workers=self.num_workers,  # should be 0 if using Dask
                 shuffle=False,
-                collate_fn=CoOccurrenceDataset.custom_collate_fn,
+                collate_fn=CoOccurrenceDataset.custom_collate_fn,  # type: ignore
                 # persistent_workers=True if self._number_of_workers > 0 else False,
                 # pin_memory=True Did not see improvement in performance
             )
@@ -126,7 +128,7 @@ class CustomDataModule(pl.LightningDataModule):
 
 
 class CoOccurrenceDataset(Dataset):  # type: ignore
-    def __init__(self, dask_df, partition_prop=1.0) -> None:
+    def __init__(self, dask_df, partition_prop=1.0) -> None:  # type: ignore
         self.dask_df = dask_df
         self.total_indices = list(range(self.dask_df.npartitions))
 

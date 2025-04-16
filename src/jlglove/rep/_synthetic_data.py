@@ -45,7 +45,7 @@ class SyntheticDataGenerator:
         print("ToyData_bin shape: ", ToyData_bin.shape)
 
         non_zero_list = [(int(x), int(y)) for x, y in zip(*np.nonzero(ToyData_bin), strict=False)]
-        rep_df = pd.DataFrame(non_zero_list, columns=["name", "bioIdentity"])
+        rep_df = pd.DataFrame(non_zero_list, columns=["name", "bioIdentity"])  # type: ignore
         training_data_url = f"{self.save_path}/Glove_Synthentic_Data_500_rep.parquet"
         print("Saving training_data to: ", training_data_url)
         rep_df.to_parquet(training_data_url, index=False)
@@ -55,7 +55,8 @@ class SyntheticDataGenerator:
         t2_url = f"{self.save_path}/{basename}_t2.parquet"
         print("Saving training_data to: ", t2_url)
         # seqs_t2 = seqs_t2.reset_index(drop=True)
-        # dd.from_pandas(seqs_t2, npartitions=10).to_parquet(t2_url) # For testing training with proportion_prop
+        # For testing training with proportion_prop
+        # dd.from_pandas(seqs_t2, npartitions=10).to_parquet(t2_url)
         seqs_t2.to_parquet(t2_url, index=False)
 
         bi_df_with_binary_columns = self.calculate_cluster_labels(B, toy_t2, bi_df)
@@ -88,7 +89,7 @@ class SyntheticDataGenerator:
 
         return
 
-    def compute_total_tcr_occurrence(self, df, bio_df):
+    def compute_total_tcr_occurrence(self, df: pd.DataFrame, bio_df: pd.DataFrame):
         # Assuming df and bio_df are Pandas DataFrames
         # Join the DataFrames on 'bioIdentity'
         seqs = pd.merge(df, bio_df, on="bioIdentity", how="inner")
@@ -121,15 +122,15 @@ class SyntheticDataGenerator:
         r_sparsity = n_nonzero_entries / n_entries
         print(f"Sparsity of the donor-tcr matrix: {r_sparsity}")
         donor_tcr = create_sparse_donor_tcr_matrix(seqs_uniques_filtered)
-        donor_counts_for_tcr = donor_tcr.T.dot(np.ones((donor_tcr.shape[0], 1)))
+        donor_counts_for_tcr = donor_tcr.T.dot(np.ones((donor_tcr.shape[0], 1)))  # type: ignore
         # tcr_counts_for_donor = donor_tcr.dot(np.ones((donor_tcr.shape[1], 1)))
         return donor_counts_for_tcr
 
-    def calculate_cluster_labels(self, B, toy_t2, bi_df):
+    def calculate_cluster_labels(self, B, toy_t2, bi_df):  # type: ignore
         g = sns.clustermap(
             toy_t2, figsize=(5, 4), yticklabels=False, xticklabels=False, col_cluster=True
         )
-        row_clusters = g.dendrogram_row.linkage
+        row_clusters = g.dendrogram_row.linkage  # type: ignore
         clusters = fcluster(row_clusters, self.k, criterion="maxclust")
         print("clusters: ", np.unique(clusters))
         ARI = adjusted_rand_score(B.argmax(axis=1), clusters)
@@ -138,7 +139,7 @@ class SyntheticDataGenerator:
 
         labels_df = pd.DataFrame(
             [(int(i), int(label)) for i, label in enumerate(clusters_list)],
-            columns=["monotonic_index", "label"],
+            columns=["monotonic_index", "label"],  # type: ignore
         )
         bi_df_label = bi_df.merge(labels_df, on="monotonic_index", how="inner")
         # Create binary columns for CMV, Parvo, and Covid
@@ -148,9 +149,9 @@ class SyntheticDataGenerator:
 
         return bi_df_label
 
-    def binarize_data(self, ToyData):
-        def binary(t):
-            return np.random.binomial(n=1, p=t, size=1)[0]
+    def binarize_data(self, ToyData):  # type: ignore
+        def binary(t):  # type: ignore
+            return np.random.binomial(n=1, p=t, size=1)[0]  # noqa: NPY002
 
         vfunc = np.vectorize(binary)
         ToyData_bin = vfunc(ToyData)
@@ -162,7 +163,7 @@ class SyntheticDataGenerator:
         S_expos = int(self.n / 2)
         for i in range(S_expos):
             alpha = [1] * self.k  ## change this to create sparsity
-            q_K = np.random.dirichlet(alpha, size=1)[0]
+            q_K = np.random.dirichlet(alpha, size=1)[0]  # noqa: NPY002
             # print(q_K)
             S[0][i] = q_K[0]
             S[1][i] = q_K[1]
@@ -176,16 +177,16 @@ class SyntheticDataGenerator:
         for j in range(self.j):
             alpha = [0.01] * self.k
             # alpha = 0.01, 0.1, 0.5, 1 varies level of sparsity, smaller => sparse
-            q_K = np.random.dirichlet(alpha, size=1)[0]
+            q_K = np.random.dirichlet(alpha, size=1)[0]  # noqa: NPY002
             B[j][0] = q_K[0]
             B[j][1] = q_K[1]
             B[j][2] = q_K[2]
         return B
 
-    def compute_co_occurence(self, df):
+    def compute_co_occurence(self, df: pd.DataFrame):  # type: ignore
         # Get unique bioIdentity values and sort them
         biods = df["bioIdentity"].unique()
-        biods.sort()
+        biods.sort()  # type: ignore
 
         # Create a DataFrame with bioIdentity and corresponding index
         bi_df = pd.DataFrame({"bioIdentity": biods, "index": range(len(biods))})
@@ -201,7 +202,7 @@ class SyntheticDataGenerator:
         seqs_join = seqs_join[seqs_join["row_index"] != seqs_join["column_index"]]
 
         # Group by row_index and column_index and count occurrences
-        seqs_join = (
+        seqs_join = (  # type: ignore
             seqs_join.groupby(["row_index", "column_index"]).size().reset_index(name="vals")
         )
         # Create a COO matrix from the counts

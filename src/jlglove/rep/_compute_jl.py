@@ -1,11 +1,12 @@
 import numpy as np
 from scipy.sparse import csr_matrix
 
-np.random.seed(0)
+np.random.seed(0)  # noqa: NPY002
 
 
-def create_sparse_co_occurence_matrix(df):
-    # Assuming df is the co-occurrence Pandas DataFrame with columns "row_index", "column_index", and "vals"
+def create_sparse_co_occurence_matrix(df):  # type: ignore
+    # Assuming df is the co-occurrence Pandas DataFrame
+    # with columns "row_index", "column_index", and "vals"
     entries = [(row["row_index"], row["column_index"], row["vals"]) for _, row in df.iterrows()]
 
     # Create the sparse matrix
@@ -18,7 +19,7 @@ def create_sparse_co_occurence_matrix(df):
     return sparse_matrix
 
 
-def create_sparse_donor_tcr_matrix(df):
+def create_sparse_donor_tcr_matrix(df):  # type: ignore
     # Assuming df is a Pandas DataFrame with 'name', 'bioIdentity', and 'monotonic_index' columns
 
     bioIdentities_df = df[["bioIdentity", "monotonic_index"]].drop_duplicates()
@@ -54,15 +55,15 @@ def create_sparse_donor_tcr_matrix(df):
     return sparse_matrix
 
 
-def jl_transform(sparse_matrix, n_components, donor_tcr=False):
+def jl_transform(sparse_matrix, n_components, donor_tcr=False):  # type: ignore
     k = sparse_matrix.shape[1]
     # d_list = [100, 300, int(math.sqrt(k))]
     d = n_components
 
     p = 0.5 * (1 - 1 / np.sqrt(3))  # P(0) = 2/3, P(-1) = 1/6, P(1) = 1/6
 
-    bin_mat_1 = np.random.binomial(1, p, (d, k))
-    bin_mat_2 = np.random.binomial(1, p, (d, k))
+    bin_mat_1 = np.random.binomial(1, p, (d, k))  # noqa: NPY002
+    bin_mat_2 = np.random.binomial(1, p, (d, k))  # noqa: NPY002
     spr_bin_mat = csr_matrix(bin_mat_1 - bin_mat_2)
 
     left_mat = spr_bin_mat.dot(sparse_matrix.T)

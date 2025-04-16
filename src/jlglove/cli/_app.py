@@ -169,7 +169,7 @@ class Application(apps.Container, cli.Container, apps.PluginMixin):
             eval_epoch=eval_epoch,
             bioid_df=training_bioids,
             jl_init=jl_init,
-            l1_lambda=l1_lambda,
+            l1_lambda=l1_lambda,  # type: ignore
             train_partition_prop=train_partition_prop,
             learning_rate=learning_rate,
         )

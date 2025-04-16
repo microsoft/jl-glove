@@ -10,18 +10,18 @@ from pytorch_lightning import LightningModule
 class GloVeLightningModel(LightningModule):
     def __init__(
         self,
-        num_tcr,
-        emb_size,
-        bioid_df,
-        jl_init=False,
-        train_partition_prop=1.0,
-        l1_lambda=0,
-        x_max=100,
-        alpha=0.75,
-        learning_rate=0.05,
-        batch_size=1,
-        num_workers=0,
-        eval_epoch=100,
+        num_tcr,  # type: ignore
+        emb_size,  # type: ignore
+        bioid_df,  # type: ignore
+        jl_init=False,  # type: ignore
+        train_partition_prop=1.0,  # type: ignore
+        l1_lambda=0,  # type: ignore
+        x_max=100,  # type: ignore
+        alpha=0.75,  # type: ignore
+        learning_rate=0.05,  # type: ignore
+        batch_size=1,  # type: ignore
+        num_workers=0,  # type: ignore
+        eval_epoch=100,  # type: ignore
     ):
         super().__init__()
         self.wi = nn.Embedding(num_tcr, emb_size)
@@ -79,10 +79,10 @@ class GloVeLightningModel(LightningModule):
         # Store hyperparameters
         self.save_hyperparameters()
 
-    def weighting_func(self, x):
+    def weighting_func(self, x):  # type: ignore
         return self.b0 + self.b * (x**self.alpha)
 
-    def forward(self, i_indices, j_indices):
+    def forward(self, i_indices, j_indices):  # type: ignore
         w_i = self.wi(i_indices).squeeze()
         w_j = self.wj(j_indices).squeeze()
         b_i = self.bi(i_indices).squeeze()
@@ -91,7 +91,7 @@ class GloVeLightningModel(LightningModule):
         x = torch.sum(w_i * w_j, dim=1) + b_i + b_j
         return x
 
-    def compute_loss(self, batch, regularization=True):
+    def compute_loss(self, batch, regularization=True):  # type: ignore
         i_indices, j_indices, counts = batch
         x = self.forward(i_indices, j_indices)
         y = torch.log(counts)
@@ -105,7 +105,7 @@ class GloVeLightningModel(LightningModule):
 
         return loss
 
-    def training_step(self, batch, batch_idx):
+    def training_step(self, batch, batch_idx):  # type: ignore
         loss = self.compute_loss(batch, regularization=True)
 
         self.log(
@@ -119,7 +119,7 @@ class GloVeLightningModel(LightningModule):
         )
         return loss
 
-    def validation_step(self, batch, batch_idx):
+    def validation_step(self, batch, batch_idx):  # type: ignore
         if self.train_partition_prop == 1.0:
             return None
         # TODO: change the condition for the validation epochs
@@ -139,7 +139,7 @@ class GloVeLightningModel(LightningModule):
             )
             return loss
 
-    def test_step(self, batch, batch_idx):
+    def test_step(self, batch, batch_idx):  # type: ignore
         loss = self.compute_loss(
             batch, regularization=False
         )  # # Only calculate the main loss (no L1 regularization)
@@ -156,9 +156,12 @@ class GloVeLightningModel(LightningModule):
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adagrad(
-            self.parameters(), lr=self.hparams.learning_rate
+            self.parameters(),
+            lr=self.hparams.learning_rate,  # type: ignore
         )  # Used in the GloVe algorithm works better that Adam for Sparse data
-        # optimizer = torch.optim.Adadelta(self.parameters(), lr=self.hparams.learning_rate)  TODO: check other optimizers # Used in the GloVe algorithm works better that Adam for Sparse data
+        # TODO: check other optimizers
+        # Used in the GloVe algorithm works better that Adam for Sparse data
+        # optimizer = torch.optim.Adadelta(self.parameters(), lr=self.hparams.learning_rate)
         # optimizer = torch.optim.Adam(self.parameters(), lr=self.hparams.learning_rate)
         return optimizer
 
@@ -171,12 +174,12 @@ class GloVeLightningModel(LightningModule):
 
         # Average the two embeddings
         final_embeddings = (embeddings_i + embeddings_j) / 2.0
-        return final_embeddings
+        return final_embeddings  # type: ignore
 
-    def get_idx(self, label, bioid_df):
+    def get_idx(self, label, bioid_df):  # type: ignore
         return bioid_df[bioid_df[label] == 1]["monotonic_index"].values
 
-    def plot_embeddings(self, bioid_df, embeddings, title, plot_labels=False) -> plt:
+    def plot_embeddings(self, bioid_df, embeddings, title, plot_labels=False) -> plt:  # type: ignore
         plt.figure(figsize=(10, 10))
         labels = ["CMV", "Parvo", "Covid"]
         colors = sns.color_palette("husl", len(labels) + 1)
@@ -208,7 +211,7 @@ class GloVeLightningModel(LightningModule):
         return plt
 
     @staticmethod
-    def combine_pooling(embeddings, stat_list=("max", "mean")):
+    def combine_pooling(embeddings, stat_list: tuple[str, ...] = ("max", "mean")):  # type: ignore
         embeddings_stacked = np.vstack(embeddings)
         stat_arr = list()
 
@@ -237,7 +240,7 @@ class GloVeLightningModel(LightningModule):
         return np.concatenate(stat_arr)
 
     @staticmethod
-    def check_bioids(df, bioid_df):
+    def check_bioids(df: pd.DataFrame, bioid_df: pd.DataFrame) -> bool:
         if "monotonic_index" not in df.columns:
             print("df missing monotonic index column")
             return False
@@ -258,16 +261,16 @@ class GloVeLightningModel(LightningModule):
         return is_subset
 
     @staticmethod
-    def merge_aggregate_embeddings(
-        df,
-        bioid_df,
-        embeddings,
-        label=None,  # Set default value to None
-        es_idx=None,
-        sub_label=None,
-        aggregate_fun=combine_pooling,
-        aggregate_stat_list=("min", "max"),
-        names_to_select=None,
+    def merge_aggregate_embeddings(  # type: ignore
+        df,  # type: ignore
+        bioid_df,  # type: ignore
+        embeddings,  # type: ignore
+        label=None,  # type: ignore
+        es_idx=None,  # type: ignore
+        sub_label=None,  # type: ignore
+        aggregate_fun=combine_pooling,  # type: ignore
+        aggregate_stat_list=("min", "max"),  # type: ignore
+        names_to_select=None,  # type: ignore
     ):
         """Merge and aggregate embeddings."""
         print(
@@ -281,7 +284,8 @@ class GloVeLightningModel(LightningModule):
             aggregate_stat_list,
         )
 
-        # Merge dataframes on 'bioIdentity' and create 'embedding' column by mapping 'idx' to embeddings
+        # Merge dataframes on 'bioIdentity'
+        # and create 'embedding' column by mapping 'idx' to embeddings
         if not GloVeLightningModel.check_bioids(df=df, bioid_df=bioid_df):
             print("Merging dataframes on 'bioIdentity' and creating 'embedding' column")
             if "monotonic_index" in df.columns:
@@ -302,7 +306,7 @@ class GloVeLightningModel(LightningModule):
 
         # Prepare for groupby operation
         if es_idx is not None:
-            df_idx["es_count"] = df_idx["idx"].isin(es_idx).astype(int)
+            df_idx["es_count"] = df_idx["idx"].isin(es_idx).astype(int)  # type: ignore
 
         # Aggregate embeddings by 'name' with a single groupby operation
         aggregation_functions = {
