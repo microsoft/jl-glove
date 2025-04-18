@@ -19,7 +19,7 @@ This repository contains the Pytorch code to replicate experiments in our paper 
 }
 ```
 
-- Model type: Un-supervised representation learning
+- Model type: Unsupervised representation learning
 - License: MIT
 
 ## Model
@@ -37,10 +37,10 @@ poetry install
 ```
 
 ## Data
-We consider the following datasets:
+We consider the following public datasets:
 - [Synthentic](src/jlglove/rep/_synthetic_data.py) for validating of the proposed JL-GloVe algorithm
-- [ImmuneCODE](https://clients.adaptivebiotech.com/pub/covid-2020) for training the public TCR embeddings
-- [ImmuneACCESS](https://clients.adaptivebiotech.com/pub/emerson-2017-natgen) for evaluating the trained public TCR embeddings
+- [ImmuneCODE](https://clients.adaptivebiotech.com/pub/covid-2020) for training the public JL-GloVe TCR embeddings
+- [Emerson](https://clients.adaptivebiotech.com/pub/emerson-2017-natgen) for evaluating the trained public TCR embeddings
 
 ## Model Training
 
