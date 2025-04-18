@@ -1,8 +1,59 @@
-# Project
+<!-- # Project
 - Developed by: Paidamoyo Chapfuwa , Ilker Demirel , Lorenzo Pisani, Javier Zazo, Elon Portugaly, 
 H. Jabran Zahid, Julia Greissl
 - Model type: Un-supervised representation learning
+- License: MIT -->
+
+# Scalable Universal T-Cell Receptor Embeddings from Adaptive Immune Repertoires (ICLR 2025)
+
+This repository contains the Pytorch code to replicate experiments in our paper [Scalable Universal T-Cell Receptor Embeddings from Adaptive Immune Repertoires](https://openreview.net/pdf?id=wyF5vNIsO7) accepted at the International Conference on Learning Representations (ICLR 2025):
+
+```latex
+@inproceedings{
+    chapfuwa2025scalable,
+    title={Scalable Universal T-Cell Receptor Embeddings from Adaptive Immune Repertoires},
+    author={Paidamoyo Chapfuwa and Ilker Demirel and Lorenzo Pisani and Javier Zazo and Elon Portugaly and H. Jabran Zahid and Julia Greissl},
+    booktitle={The Thirteenth International Conference on Learning Representations},
+    year={2025},
+    url={https://openreview.net/forum?id=wyF5vNIsO7}
+}
+```
+
+- Model type: Un-supervised representation learning
 - License: MIT
+
+## Model
+![Model](docs/images/model_v2.png)
+
+## Prerequisites
+
+The code is implemented with the following dependencies:
+
+- [Python  3.10.16](https://github.com/pyenv/pyenv)
+- Additional python packages can be installed by running: 
+
+```
+poetry install
+```
+
+## Data
+We consider the following datasets:
+- [Synthentic](src/jlglove/rep/_synthetic_data.py) for validating of the proposed JL-GloVe algorithm
+- [ImmuneCODE](https://clients.adaptivebiotech.com/pub/covid-2020) for training the public TCR embeddings
+- [ImmuneACCESS](https://clients.adaptivebiotech.com/pub/emerson-2017-natgen) for evaluating the trained public TCR embeddings
+
+## Model Training
+
+* To train **JL-GloVe** embeddings using synthentic data run:
+
+```
+jl-glove generate & jl-glove train
+```
+
+## Metrics and Visualizations
+
+* Once the networks are trained and the results are saved, we visualize the data specific key results:
+  
 
 ## Direct intended uses
 JL-Glove is shared for research purposes only, namely, benchmarking and inference on downstream
