@@ -39,7 +39,7 @@ poetry install
 ## Data
 We consider the following public datasets:
 - [Synthentic](src/jlglove/rep/_synthetic_data.py) for validating of the proposed JL-GloVe algorithm
-- [ImmuneCODE](https://clients.adaptivebiotech.com/pub/covid-2020) for training the public JL-GloVe TCR embeddings
+- [ImmuneCODE](https://clients.adaptivebiotech.com/pub/covid-2020) for training the publicly available JL-GloVe TCR embeddings
 - [Emerson](https://clients.adaptivebiotech.com/pub/emerson-2017-natgen) for evaluating the trained public TCR embeddings
 
 ## Model Training
@@ -52,11 +52,10 @@ jl-glove generate & jl-glove train
 
 ## Metrics and Visualizations
 
-* Once the networks are trained and the results are saved, we visualize the data specific key results:
-  
+* The JL-GloVe TCR embeddings derived from the 3,991 [ImmuneCODE](https://clients.adaptivebiotech.com/pub/covid-2020) repertoires are available here:
 
 ## Direct intended uses
-JL-Glove is shared for research purposes only, namely, benchmarking and inference on downstream
+JL-GloVe is shared for research purposes only, namely, benchmarking and inference on downstream
 tasks. It is not meant to be used for clinical practice. JL-Glove was not extensively tested for
 its capabilities and properties, including its accuracy and reliability in application settings,
 fairness across different demographics and uses, and security and privacy.
