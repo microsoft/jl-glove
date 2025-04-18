@@ -61,7 +61,8 @@ class Application(apps.Container, cli.Container, apps.PluginMixin):
         """Train model embeddings from a prepared directory of tcr data."""
         print(f"training model from: {input_path}")
         print(f"storing embeddings into: {output_path}")
-        training_data_uri = Path(input_path) / "Glove_Synthentic_Data_500_t2.parquet"
+        training_data_uri = Path(input_path) / \
+            "Glove_Synthentic_Data_500_t2.parquet"
         training_bioids_uri = (
             Path(input_path) / "Glove_Synthentic_Data_500_BioId_with_ES_JL.parquet"
         )
@@ -81,13 +82,15 @@ class Application(apps.Container, cli.Container, apps.PluginMixin):
         l1_lambda = 0.0
         learning_rate = 0.05
 
-        training_bioids = dd.read_parquet(path=str(training_bioids_uri)).compute()
+        training_bioids = dd.read_parquet(
+            path=str(training_bioids_uri)).compute()
         training_data = dd.read_parquet(path=str(training_data_uri))
 
         print(training_bioids.head())
         print(training_data.head())
 
-        epoch_duration_printer = rep.EpochDurationPrinter(bioid_df=training_bioids)
+        epoch_duration_printer = rep.EpochDurationPrinter(
+            bioid_df=training_bioids)
 
         embedding_plotter = rep.EmbeddingPlotterCallback(
             bioid_df=training_bioids,
@@ -125,7 +128,8 @@ class Application(apps.Container, cli.Container, apps.PluginMixin):
             torch_logger = WandbLogger(project="jl-glove", log_model="all")
         else:
             if checkpoint_name is not None:
-                raise RuntimeError("checkpoint_name is not supported without wandb")
+                raise RuntimeError(
+                    "checkpoint_name is not supported without wandb")
 
             # we fall back to a simple csv logger otherwise
             torch_logger = CSVLogger(save_dir=".tmp/torch-logs")
@@ -170,8 +174,7 @@ class Application(apps.Container, cli.Container, apps.PluginMixin):
             bioid_df=training_bioids,
             jl_init=jl_init,
             l1_lambda=l1_lambda,  # type: ignore
-            train_partition_prop=train_partition_prop,
-            learning_rate=learning_rate,
+            train_partition_prop=train_partition_prop
         )
         trainer.fit(model=model, datamodule=custom_dm, ckpt_path=ckpt_path)
 

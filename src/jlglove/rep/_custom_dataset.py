@@ -44,7 +44,8 @@ class CustomDataModule(pl.LightningDataModule):
         if self.ckpt_path is not None and self.trainer.is_global_zero:  # type: ignore
             # Initialize WandB
             if not self._wandb_detected:
-                raise RuntimeError("can't load checkpoint from wandb without WANDB_API_KEY")
+                raise RuntimeError(
+                    "can't load checkpoint from wandb without WANDB_API_KEY")
 
             wandb.init(project="jl-glove")
             print("Downloading checkpoint from wandb...")
@@ -88,8 +89,9 @@ class CustomDataModule(pl.LightningDataModule):
 
     def val_dataloader(self):  # type: ignore
         if self._val_dataloader is None:
-            val_partition_prop = self.train_partition_prop
-            print(f"Creating validation dataloader with partion prop {val_partition_prop}")
+            val_partition_prop = (1.0 - self.train_partition_prop) / 2
+            print(
+                f"Creating validation dataloader with partion prop {val_partition_prop}")
             dataset = CoOccurrenceDataset(
                 self.local_training_data, partition_prop=val_partition_prop
             )
@@ -108,8 +110,9 @@ class CustomDataModule(pl.LightningDataModule):
 
     def test_dataloader(self):  # type: ignore
         if self._test_dataloader is None:
-            test_partition_prop = 1.0
-            print(f"Creating test dataloader with partion prop {test_partition_prop}")
+            test_partition_prop = (1.0 - self.train_partition_prop) / 2
+            print(
+                f"Creating test dataloader with partion prop {test_partition_prop}")
             dataset = CoOccurrenceDataset(
                 self.local_training_data, partition_prop=test_partition_prop
             )
