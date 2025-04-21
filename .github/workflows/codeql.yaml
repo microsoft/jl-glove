@@ -1,0 +1,43 @@
+name: "CodeQL"
+on:
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: 'the git sha to checkout'
+        required: true
+        type: string
+  workflow_call:
+    inputs:
+      sha:
+        description: 'the git sha to checkout'
+        required: true
+        type: string
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-24.04
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        ref: ${{ inputs.sha }}
+        fetch-depth: 0
+        fetch-tags: true
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v3
+      with:
+        languages: python
+        config: |
+          paths:
+            - src
+          paths-ignore:
+            - src/jlglove_resources
+    - name: Autobuild
+      uses: github/codeql-action/autobuild@v3
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v3
+      with:
+        category: "/language:python"

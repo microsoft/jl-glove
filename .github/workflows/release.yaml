@@ -1,0 +1,22 @@
+name: Release
+on:
+  workflow_call:
+    inputs:
+      sha:
+        description: 'the git sha to checkout'
+        required: true
+        type: string
+      publish-docs:
+        description: 'whether to publish docs to the github pages'
+        required: true
+        type: boolean
+jobs:
+  publish-docs:
+    name: "deploy-docs"
+    runs-on: "ubuntu-latest"
+    if: "${{ inputs.publish-docs }}"
+    timeout-minutes: 10
+    steps:
+      - name: "deploy-gh-pages"
+        id: deployment
+        uses: actions/deploy-pages@v4

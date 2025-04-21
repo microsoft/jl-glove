@@ -1,0 +1,102 @@
+site_name: jl-glove
+repo_url: "https://github.com/microsoft/jl-glove"
+repo_name: "jl-glove"
+docs_dir: "docs"
+theme:
+  name: material
+  logo: images/logo.png
+  favicon: images/favicon.ico
+  palette:
+    # Palette toggle for automatic mode
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: teal
+      accent: light blue
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: teal
+      accent: light blue
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  icon:
+    repo: fontawesome/brands/github-alt
+  features:
+    - navigation.sections
+    - navigation.instant
+    - navigation.instant.prefetch
+    - navigation.path
+    - content.code.annotate
+    - content.code.copy
+    - content.code.select
+    - content.tabs.link
+    - toc.follow
+    - navigation.top
+extra_css:
+  - css/extra.css
+watch:
+  - "src"
+plugins:
+  - search
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          paths:
+            - "src"
+          options:
+            show_if_no_docstring: true
+            show_symbol_type_toc: true
+            show_symbol_type_heading: true
+            show_signature_annotations: false
+            group_by_category: true
+            show_category_heading: false  # adds a lot of nesting in TOC navs
+            show_root_heading: true  # adds nice grouping on pages showing more than one element
+            signature_crossrefs: true
+            merge_init_into_class: true
+            annotations_path: source
+          inventories:
+            - "https://docs.python.org/3/objects.inv"
+            - "https://click.palletsprojects.com/en/stable/objects.inv"
+  - awesome-pages
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets:
+      base_path:
+        - "."  # let us use full paths from the repo root
+        - "src"
+      check_paths: true
+  - pymdownx.magiclink
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - toc:
+      permalink: true
+  - def_list
+  - pymdownx.tasklist:
+      custom_checkbox: true
