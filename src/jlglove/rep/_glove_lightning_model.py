@@ -43,13 +43,10 @@ class GloVeLightningModel(LightningModule):
             self.wj.weight = nn.Parameter(wj_init)
 
             tcr_occurrence = sorted_bioid_df["Total TCR Occurrence"].to_numpy()
-            tcr_occurrence_normalized = tcr_occurrence / \
-                np.linalg.norm(tcr_occurrence)
+            tcr_occurrence_normalized = tcr_occurrence / np.linalg.norm(tcr_occurrence)
 
-            bi_init = torch.tensor(
-                tcr_occurrence_normalized, dtype=torch.float32)
-            bj_init = torch.tensor(
-                tcr_occurrence_normalized, dtype=torch.float32)
+            bi_init = torch.tensor(tcr_occurrence_normalized, dtype=torch.float32)
+            bj_init = torch.tensor(tcr_occurrence_normalized, dtype=torch.float32)
 
             bi_init = bi_init.view(num_tcr, 1)
             bj_init = bj_init.view(num_tcr, 1)
@@ -101,8 +98,7 @@ class GloVeLightningModel(LightningModule):
         if regularization:
             w_i = self.wi(i_indices).squeeze()
             w_j = self.wj(j_indices).squeeze()
-            loss += self.l1_lambda * (torch.norm(w_i,
-                                      p=1) + torch.norm(w_j, p=1))
+            loss += self.l1_lambda * (torch.norm(w_i, p=1) + torch.norm(w_j, p=1))
 
         return loss
 
@@ -225,19 +221,15 @@ class GloVeLightningModel(LightningModule):
             if stat == "mean":
                 stat_arr.append(np.mean(embeddings_stacked, axis=0))
             if stat == "2nd_moment":
-                stat_arr.append(
-                    np.mean(np.power(embeddings_stacked, 2), axis=0))
+                stat_arr.append(np.mean(np.power(embeddings_stacked, 2), axis=0))
             if stat == "3rd_moment":
-                stat_arr.append(
-                    np.mean(np.power(embeddings_stacked, 3), axis=0))
+                stat_arr.append(np.mean(np.power(embeddings_stacked, 3), axis=0))
             if stat == "1st_quantile":
-                stat_arr.append(np.quantile(
-                    embeddings_stacked, q=0.25, axis=0))
+                stat_arr.append(np.quantile(embeddings_stacked, q=0.25, axis=0))
             if stat == "median":
                 stat_arr.append(np.quantile(embeddings_stacked, q=0.5, axis=0))
             if stat == "3rd_quantile":
-                stat_arr.append(np.quantile(
-                    embeddings_stacked, q=0.75, axis=0))
+                stat_arr.append(np.quantile(embeddings_stacked, q=0.75, axis=0))
             if stat == "sum":
                 stat_arr.append(np.sum(embeddings_stacked, axis=0))
             if stat == "abs_sum":
@@ -256,8 +248,7 @@ class GloVeLightningModel(LightningModule):
         distinct_bioid_df_bioids = bioid_df["bioIdentity"].unique()
 
         # Check if all bioIdentity values in df are in bioid_df
-        is_subset = pd.Series(distinct_df_bioids).isin(
-            distinct_bioid_df_bioids).all()
+        is_subset = pd.Series(distinct_df_bioids).isin(distinct_bioid_df_bioids).all()
 
         # Print the result
         if is_subset:
@@ -313,8 +304,7 @@ class GloVeLightningModel(LightningModule):
 
         # Prepare for groupby operation
         if es_idx is not None:
-            df_idx["es_count"] = df_idx["idx"].isin(
-                es_idx).astype(int)  # type: ignore
+            df_idx["es_count"] = df_idx["idx"].isin(es_idx).astype(int)  # type: ignore
 
         # Aggregate embeddings by 'name' with a single groupby operation
         aggregation_functions = {
