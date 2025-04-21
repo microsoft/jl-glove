@@ -50,8 +50,8 @@ jl-glove generate && jl-glove train
 ## Metrics and Visualizations
 
 * We provide the 535,186 JL-GloVe TCR embeddings derived from the 3,991 [ImmuneCODE](https://clients.adaptivebiotech.com/pub/covid-2020) repertoires here:
-- [100 dimensions](https://github.com/microsoft/jl-glove/tree/main/src/jlglove_resources/embeddings/100.535186.parquet)
-- [300 dimensions](https://github.com/microsoft/jl-glove/tree/main/src/jlglove_resources/embeddings/300.535186.parquet)
+- [100 dimensions](https://github.com/microsoft/jl-glove/tree/main/src/jlglove_resources/rep/100.535186.parquet)
+- [300 dimensions](https://github.com/microsoft/jl-glove/tree/main/src/jlglove_resources/rep/300.535186.parquet)
 
 ## Direct intended uses
 JL-GloVe is shared for research purposes only, namely, benchmarking and inference on downstream
