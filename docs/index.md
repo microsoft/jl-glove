@@ -1,9 +1,6 @@
-<!-- # Project
-- Developed by: Paidamoyo Chapfuwa , Ilker Demirel , Lorenzo Pisani, Javier Zazo, Elon Portugaly, 
-H. Jabran Zahid, Julia Greissl
-- Model type: Un-supervised representation learning
-- License: MIT -->
-
+---
+title: intro
+---
 # Scalable Universal T-Cell Receptor Embeddings from Adaptive Immune Repertoires (ICLR 2025)
 
 This repository contains the Pytorch code to replicate experiments in our paper [Scalable Universal T-Cell Receptor Embeddings from Adaptive Immune Repertoires](https://openreview.net/pdf?id=wyF5vNIsO7) accepted at the International Conference on Learning Representations (ICLR 2025):
@@ -47,7 +44,7 @@ We consider the following public datasets:
 * To train **JL-GloVe** embeddings using synthentic data run:
 
 ```
-jl-glove generate & jl-glove train
+jl-glove generate && jl-glove train
 ```
 
 ## Metrics and Visualizations
