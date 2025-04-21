@@ -154,7 +154,7 @@ class GloVeLightningModel(LightningModule):
     def configure_optimizers(self):
         optimizer = torch.optim.Adagrad(
             self.parameters(),
-            lr=self.learning_rate,  # type: ignore
+            lr=self.learning_rate,
         )  # Used in the GloVe algorithm works better that Adam for Sparse data
         # TODO: check other optimizers
         # Used in the GloVe algorithm works better that Adam for Sparse data
@@ -208,8 +208,7 @@ class GloVeLightningModel(LightningModule):
         return plt
 
     @staticmethod
-    # type: ignore
-    def combine_pooling(embeddings, stat_list: tuple[str, ...] = ("max", "mean")):
+    def combine_pooling(embeddings, stat_list: tuple[str, ...] = ("max", "mean")):  # type: ignore
         embeddings_stacked = np.vstack(embeddings)
         stat_arr = list()
 
