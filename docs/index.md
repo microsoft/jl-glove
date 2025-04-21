@@ -20,7 +20,7 @@ This repository contains the Pytorch code to replicate experiments in our paper 
 - License: MIT
 
 ## Model
-![Model](docs/images/model_v2.png)
+![Model](model_v2.png)
 
 ## Prerequisites
 
