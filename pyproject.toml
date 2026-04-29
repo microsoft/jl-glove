@@ -9,16 +9,16 @@ license = {text = "MIT"}
 readme = "README.md"
 requires-python = ">=3.10,<4.0"
 dependencies = [
-    "rats-apps (>=0.6.2)",
-    "click (>=8.1.8)",
-    "pytorch-lightning (>=2.0.4)",
+    "rats-apps (>=0.16.0)",
+    "click (>=8.3.3)",
+    "pytorch-lightning (>=2.6.1)",
     "torch (>=2.0.1)",
-    "pandas (>=1.5.3)",
-    "numpy (>=1.24.3)",
-    "scikit-learn (>=1.2.0)",
-    "scipy (>=1.15.2)",
+    "pandas (>=2.3.3)",
+    "numpy (>=2.2.6)",
+    "scikit-learn (>=1.7.2)",
+    "scipy (>=1.15.3)",
     "seaborn (>=0.12.2)",
-    "dask[dataframe, distributed] (>=2023.6.0)",
+    "dask[dataframe, distributed] (>=2026.3.0)",
     "umap-learn",
     "wandb",
 ]
