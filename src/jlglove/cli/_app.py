@@ -1,5 +1,4 @@
 import os
-from datetime import timedelta
 from pathlib import Path
 
 import click
@@ -9,7 +8,6 @@ import torch
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import CSVLogger, WandbLogger
-from pytorch_lightning.strategies import DDPStrategy
 from rats import apps, cli, logs
 
 from jlglove import rep
@@ -73,7 +71,11 @@ class Application(apps.Container, cli.Container, apps.PluginMixin):
         eval_epoch = 10
         num_epochs = 50
         # TODO: not sure how to test this yet
-        ckpt_path = ".tmp/results/artifacts/model.ckpt" if checkpoint_name is not None else None
+        ckpt_path = (
+            str(Path(output_path) / "artifacts" / rep.CustomDataModule.CHECKPOINT_FILENAME)
+            if checkpoint_name is not None
+            else None
+        )
         train_partition_prop = 1.0
         batch_size = 1
         number_of_workers = 0
@@ -107,14 +109,7 @@ class Application(apps.Container, cli.Container, apps.PluginMixin):
             embedding_plotter,
             checkpoint_callback,
         ]
-
-        custom_timeout = timedelta(minutes=120)
-        DDPStrategy(
-            find_unused_parameters=False,
-            timeout=custom_timeout,
-            process_group_backend="nccl",
-            checkpoint_io=rep.CustomTorchCheckpointIO(),
-        )  # TODO NCCL fails when gpus > 2; gloo
+        checkpoint_io = rep.CustomTorchCheckpointIO()
 
         devices = torch.cuda.device_count()
         for i in range(devices):
@@ -137,6 +132,7 @@ class Application(apps.Container, cli.Container, apps.PluginMixin):
                 devices=devices,
                 accelerator="gpu",
                 # strategy=ddp_strategy, # TODO enable when using multiple GPUs
+                plugins=[checkpoint_io],
                 num_sanity_val_steps=0,
                 accumulate_grad_batches=4,
                 # precision="16-mixed",  # TODO: change to 16 for faster computation
@@ -148,6 +144,7 @@ class Application(apps.Container, cli.Container, apps.PluginMixin):
                 logger=torch_logger,
                 callbacks=custom_callbacks,
                 accelerator="cpu",
+                plugins=[checkpoint_io],
                 num_sanity_val_steps=0,
                 accumulate_grad_batches=4,
             )
