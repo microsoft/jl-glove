@@ -59,20 +59,27 @@ class Application(apps.Container, cli.Container, apps.PluginMixin):
         """Train model embeddings from a prepared directory of tcr data."""
         print(f"training model from: {input_path}")
         print(f"storing embeddings into: {output_path}")
-        training_data_uri = Path(input_path) / "Glove_Synthentic_Data_500_t2.parquet"
+        training_data_uri = Path(input_path) / \
+            "Glove_Synthentic_Data_500_t2.parquet"
         training_bioids_uri = (
             Path(input_path) / "Glove_Synthentic_Data_500_BioId_with_ES_JL.parquet"
         )
 
         wandb_detected = os.environ.get("WANDB_API_KEY") is not None
 
-        num_tcr = 500
-        emb_size = 100
+        training_bioids = dd.read_parquet(
+            path=str(training_bioids_uri)).compute()
+
+        jl_columns = [
+            c for c in training_bioids.columns if c.startswith("JL_Col")]
+        num_tcr = len(training_bioids)
+        emb_size = len(jl_columns)
         eval_epoch = 10
         num_epochs = 50
         # TODO: not sure how to test this yet
         ckpt_path = (
-            str(Path(output_path) / "artifacts" / rep.CustomDataModule.CHECKPOINT_FILENAME)
+            str(Path(output_path) / "artifacts" /
+                rep.CustomDataModule.CHECKPOINT_FILENAME)
             if checkpoint_name is not None
             else None
         )
@@ -82,13 +89,13 @@ class Application(apps.Container, cli.Container, apps.PluginMixin):
         jl_init = True
         l1_lambda = 0.0
 
-        training_bioids = dd.read_parquet(path=str(training_bioids_uri)).compute()
         training_data = dd.read_parquet(path=str(training_data_uri))
 
         print(training_bioids.head())
         print(training_data.head())
 
-        epoch_duration_printer = rep.EpochDurationPrinter(bioid_df=training_bioids)
+        epoch_duration_printer = rep.EpochDurationPrinter(
+            bioid_df=training_bioids)
 
         embedding_plotter = rep.EmbeddingPlotterCallback(
             bioid_df=training_bioids,
@@ -119,7 +126,8 @@ class Application(apps.Container, cli.Container, apps.PluginMixin):
             torch_logger = WandbLogger(project="jl-glove", log_model="all")
         else:
             if checkpoint_name is not None:
-                raise RuntimeError("checkpoint_name is not supported without wandb")
+                raise RuntimeError(
+                    "checkpoint_name is not supported without wandb")
 
             # we fall back to a simple csv logger otherwise
             torch_logger = CSVLogger(save_dir=".tmp/torch-logs")
