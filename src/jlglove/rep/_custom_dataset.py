@@ -7,16 +7,14 @@ from pathlib import Path
 import dask.dataframe as dd
 import pytorch_lightning as pl
 import torch
-
-# import wandb
-from torch.utils.data import DataLoader, Dataset
-
 import wandb
+from torch.utils.data import DataLoader, Dataset
 
 logger = logging.getLogger(__name__)
 
 
 class CustomDataModule(pl.LightningDataModule):
+    CHECKPOINT_FILENAME = "model.ckpt"
     _wandb_detected: bool
 
     def __init__(
@@ -35,7 +33,7 @@ class CustomDataModule(pl.LightningDataModule):
         self.ckpt_path = cktp_path
         self.local_training_data = None
         self.train_partition_prop = train_partition_prop
-        self.checkpoint_dir = checkpoint_dir + "/artifacts"
+        self.checkpoint_dir = Path(checkpoint_dir) / "artifacts"
         self._val_dataloader = None  # Caching validation dataloader
         self._test_dataloader = None  # Caching test dataloader
         self._wandb_detected = os.environ.get("WANDB_API_KEY") is not None
@@ -49,17 +47,30 @@ class CustomDataModule(pl.LightningDataModule):
             wandb.init(project="jl-glove")
             print("Downloading checkpoint from wandb...")
             artifact = wandb.use_artifact(self.ckpt_path, type="model")
-            artifact_dir = artifact.download(root=self.checkpoint_dir)
+            self.clear_directory(self.checkpoint_dir)
+            artifact_dir = Path(artifact.download(root=str(self.checkpoint_dir))).resolve()
             print("Saved Checkpoint files at: ", artifact_dir)
-            files = os.listdir(artifact_dir)  # noqa: PTH208
-            print("Files in the checkpoint directory:")
-            for file in files:
-                print(file)
-            self.local_ckpt_path = os.path.join(artifact_dir, files[-1])  # noqa: PTH118
+
+            checkpoint_files = [
+                checkpoint_file
+                for checkpoint_file in artifact_dir.rglob("*.ckpt")
+                if checkpoint_file.is_file() and not checkpoint_file.is_symlink()
+            ]
+            if len(checkpoint_files) != 1:
+                raise RuntimeError(
+                    f"expected one regular .ckpt file in artifact, found {len(checkpoint_files)}"
+                )
+
+            downloaded_checkpoint = checkpoint_files[0].resolve()
+            if not downloaded_checkpoint.is_relative_to(artifact_dir):
+                raise RuntimeError("checkpoint file resolves outside the artifact directory")
+
+            local_checkpoint = self.checkpoint_dir / self.CHECKPOINT_FILENAME
+            if downloaded_checkpoint != local_checkpoint.resolve():
+                shutil.copyfile(downloaded_checkpoint, local_checkpoint)
+
+            self.local_ckpt_path = str(local_checkpoint)
             print("Final checkpoint path: ", self.local_ckpt_path)
-            # Load the checkpoint file
-            checkpoint = torch.load(self.local_ckpt_path, weights_only=False)
-            print("Checkpoint Keys", checkpoint.keys())
 
     def clear_directory(self, directory):  # type: ignore
         if Path(directory).exists():

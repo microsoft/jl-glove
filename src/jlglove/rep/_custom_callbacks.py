@@ -7,13 +7,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import umap
+import wandb
 from lightning_utilities.core.rank_zero import rank_zero_info
 from pytorch_lightning.callbacks import Callback
 from pytorch_lightning.plugins.io import TorchCheckpointIO
 from pytorch_lightning.utilities import rank_zero_only
 from sklearn.manifold import TSNE
-
-import wandb
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +33,22 @@ class CustomTorchCheckpointIO(TorchCheckpointIO):
     _wandb_detected: bool
 
     def __init__(self) -> None:
+        super().__init__()
         self._wandb_detected = os.environ.get("WANDB_API_KEY") is not None
+
+    def load_checkpoint(self, path, map_location=None):  # type: ignore
+        checkpoint_path = Path(path).resolve()
+        with checkpoint_path.open("rb") as checkpoint_file:
+            checkpoint = torch.load(
+                checkpoint_file,
+                map_location=map_location,
+                weights_only=True,
+            )
+
+        if not isinstance(checkpoint, dict):
+            raise TypeError("checkpoint must contain a dictionary")
+
+        return checkpoint
 
     def save_checkpoint(self, checkpoint, path, storage_options=None):  # type: ignore
         # Create the directory if it doesn't exist
@@ -66,7 +80,7 @@ class CustomTorchCheckpointIO(TorchCheckpointIO):
         # Save the checkpoint locally in the specified path
         rank_zero_info(f"Saving checkpoint to {checkpoint_path}")
         with Path(checkpoint_path).open("wb") as f:
-            torch.save(checkpoint, f, pickle_protocol=4)  # Explicitly set pickle protocol to 4
+            torch.save(checkpoint, f)
         rank_zero_info(f"Checkpoint saved locally to {checkpoint_path}")
 
         # Log the checkpoint to W&B using artifacts

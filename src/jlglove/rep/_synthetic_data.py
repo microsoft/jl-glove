@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 import seaborn as sns
 from scipy.cluster.hierarchy import fcluster
@@ -73,7 +74,7 @@ class SyntheticDataGenerator:
 
         C_jl = jl_transform(C_sparse, n_components=100, donor_tcr=False)
         column_names = [f"JL_Col{i}" for i in range(C_jl.shape[1])]
-        final_embeddings_pd = pd.DataFrame(C_jl, columns=column_names)
+        final_embeddings_pd = pd.DataFrame(C_jl, columns=pd.Index(column_names))
         final_embeddings_pd.insert(0, "monotonic_index", final_embeddings_pd.index)
         final_embeddings_pd.insert(
             len(final_embeddings_pd.columns), "Total TCR Occurrence", tcr_total_occurrence
@@ -89,7 +90,9 @@ class SyntheticDataGenerator:
 
         return
 
-    def compute_total_tcr_occurrence(self, df: pd.DataFrame, bio_df: pd.DataFrame):
+    def compute_total_tcr_occurrence(
+        self, df: pd.DataFrame, bio_df: pd.DataFrame
+    ) -> npt.NDArray[np.float64]:
         # Assuming df and bio_df are Pandas DataFrames
         # Join the DataFrames on 'bioIdentity'
         seqs = pd.merge(df, bio_df, on="bioIdentity", how="inner")

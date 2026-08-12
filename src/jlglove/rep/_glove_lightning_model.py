@@ -74,7 +74,7 @@ class GloVeLightningModel(LightningModule):
         self.learning_rate = learning_rate
 
         # Store hyperparameters
-        self.save_hyperparameters()
+        self.save_hyperparameters(ignore=["bioid_df"])
 
     def weighting_func(self, x):  # type: ignore
         return self.b0 + self.b * (x**self.alpha)
