@@ -47,6 +47,11 @@ mkdocstrings-python = "*"
 [tool.poetry.scripts]
 jl-glove = "jlglove.cli:main"
 
+[[tool.poetry.source]]
+name = "azure-artifacts"
+url = "https://packagefeedproxy.microsoft.io/pypi/simple/"
+priority = "primary"
+
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
